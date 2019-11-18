@@ -9,10 +9,12 @@ import {
   Text,
   StatusBar,
   AsyncStorage,
+  ActivityIndicator
 } from 'react-native';
 import { createDrawerNavigator } from 'react-navigation-drawer'
 
-import { createAppContainer } from 'react-navigation';
+import { StackNavigator,
+  TabNavigator, createAppContainer, SwitchNavigator, createSwitchNavigator } from 'react-navigation';
 
 
 import List from './components/List'
@@ -44,15 +46,15 @@ export class App extends Component {
   constructor() {
     super();
     this.state = {
-      token : '',
+      token: '',
     }
   }
 
-  componentDidMount() {
-    this._readItem();
-}
+
+
 
   render() {
+
     return (
       <View style={[{ flex: 1 }]}>
         <HeaderNavigationBar {...this.props} />
@@ -60,37 +62,73 @@ export class App extends Component {
       </View>
     );
   };
+
 }
 
-
-_readItem = async () => {
-  let tokenSt = await AsyncStorage.getItem('@opflix:token');
-  this.setState({ token: tokenSt });
+export class AuthLoadingScreen extends React.Component {
+  constructor() {
+    super();
+    this._ler();
+  }
+  _ler = async () => {
+    const token = await AsyncStorage.getItem('@opflix:token');
+    this.props.navigation.navigate(token ? 'App' : 'Auth');
+  }
+  
+  render() {
+    return (
+      <View style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <ActivityIndicator />
+        <StatusBar barStyle="default" />
+      </View>
+    );
+  }
 }
 
-
-
-
-
-export default createAppContainer(createDrawerNavigator((this.state.token !== null) ?
-{
-  Home: {
-    screen: App
-  },
-  Logoff: 'Tela de Logoff'
-} :
-{
-  Home: {
-    screen: App
-  },
-  Signin: {
-    screen: Signin
-  },
-  Logoff: 'Tela de Logoff'
-}
-  , {
+const SignedOut = createDrawerNavigator(
+  {
+    Home: {
+      screen: App
+    },
+    Signin: {
+      screen: Signin
+    }
+  },{
     contentComponent: SideMenu,
     initialRouteName: 'Home',
-  })
-);
+  });
 
+  const SignedIn = createDrawerNavigator(
+    {
+      Home: {
+        screen: App
+      },
+      Logoff: 'Tela de Logoff'
+    },{
+      contentComponent: SideMenu,
+      initialRouteName: 'Home',
+    });
+    
+
+    export const RootNavigator = (signedIn = false) => {
+      return createSwitchNavigator(
+        {
+          SignedOutLoading: AuthLoadingScreen,
+          App: {
+            screen: SignedIn
+          },
+          Auth: {
+            screen: SignedOut
+          }
+        },
+        {
+          initialRouteName: signedIn ? "App" : "SignedOutLoading"
+        }
+      );
+    };
+
+    export default createAppContainer(RootNavigator());

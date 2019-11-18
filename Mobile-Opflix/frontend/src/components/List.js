@@ -15,6 +15,7 @@ class List extends Component {
         super(props)
         this.state = {
             lancamentos: [],
+            favoritos: [],
             token: ''
         }
     }
@@ -30,8 +31,9 @@ class List extends Component {
         )
     }
     componentDidMount() {
-        this._listarLancamentos();
         this._readItem();
+        this._listarLancamentos();
+        this._listarFavoritos();
     }
 
     _listarLancamentos = async () => {
@@ -43,11 +45,28 @@ class List extends Component {
             .catch(error => console.log(error))
     };
 
+    _listarFavoritos = async () => {
+        await fetch("http://192.168.4.233:5000/api/lancamentos/favoritos", {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': "bearer " + this.state.token
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                this.setState({ favoritos: data });
+            })
+            .catch(error => console.warn(error))
+    };
+
 
 
     render() {
         return (
             <View style={{ flex: 1 }}>
+            <View>
+                <Text>Lançamentos:</Text>
                 <FlatList
                     horizontal
                     ItemSeparatorComponent={() => <View style={{ width: 5 }} />}
@@ -55,8 +74,19 @@ class List extends Component {
                     renderItem={({ item }) => this._renderItem(item)}
                     data={this.state.lancamentos}
                 />
-                <Text>{this.state.token}</Text>
             </View>
+            <View>
+            <Text>Favoritos:</Text>
+            <FlatList
+                horizontal
+                ItemSeparatorComponent={() => <View style={{ width: 5 }} />}
+                keyExtractor={item => item.idLancamento.toString()}
+                renderItem={({ item }) => this._renderItem(item)}
+                data={this.state.favoritos}
+            />
+            <Text>{this.state.favoritos}</Text>
+        </View>
+        </View>
         )
     }
 }

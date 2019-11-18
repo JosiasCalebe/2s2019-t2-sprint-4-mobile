@@ -20,8 +20,7 @@ export default class SignIn extends Component {
         if (tokenRecebido !== null) {
             try {
                 await AsyncStorage.setItem('@opflix:token', tokenRecebido);
-                this.props.navigation.navigate('Home');
-                console.warn(AsyncStorage.getItem('@opflix:token'))
+                this.props.navigation.navigate('App');
             } catch (error) { console.warn(error)}
         }
     };
@@ -40,7 +39,7 @@ export default class SignIn extends Component {
         })
             .then(resposta => resposta.json())
             .then(response => this._redirectToMain(response.token))
-            .catch(erro => console.warn('deu ruim' + erro));
+            .catch(erro => console.warn('erro: ' + erro));
     };
 
 
