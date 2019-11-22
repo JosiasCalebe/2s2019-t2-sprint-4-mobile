@@ -5,8 +5,10 @@ import {
     View,
     StyleSheet,
     FlatList,
-    AsyncStorage
+    AsyncStorage,
+    TouchableOpacity
 } from 'react-native'
+import { TouchableHighlight,  } from 'react-native-gesture-handler';
 
 
 class List extends Component {
@@ -21,15 +23,21 @@ class List extends Component {
     }
 
     _readItem = async () => {
-        let tokenSt = await AsyncStorage.getItem('@opflix:token');
-        this.setState({ token: tokenSt });
+        this.setState({ token: await AsyncStorage.getItem('@opflix:token') });
     }
 
     _renderItem(item) {
         return (
-            <Image style={{ width: 120, height: 180 }} source={{ uri: 'http://192.168.4.233:5000' + item.poster }} />
+            <TouchableOpacity onPress={async() => {
+                console.warn('click')
+                await AsyncStorage.setItem('@opflix:idL', item.idLancamento);
+                 this.props.navigation.navigate('Details')}}
+            >
+                <Image style={{ width: 120, height: 180 }} source={{ uri: 'http://192.168.4.233:5000' + item.poster }} />
+            </TouchableOpacity>
         )
     }
+
     componentDidMount() {
         this._readItem();
         this._listarLancamentos();
@@ -50,7 +58,7 @@ class List extends Component {
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': "bearer " + this.state.token
+                'Authorization': "Bearer " + await AsyncStorage.getItem('@opflix:token'),
             }
         })
             .then(response => response.json())
@@ -65,28 +73,28 @@ class List extends Component {
     render() {
         return (
             <View style={{ flex: 1 }}>
-            <View>
-                <Text>Lançamentos:</Text>
-                <FlatList
-                    horizontal
-                    ItemSeparatorComponent={() => <View style={{ width: 5 }} />}
-                    keyExtractor={item => item.idLancamento.toString()}
-                    renderItem={({ item }) => this._renderItem(item)}
-                    data={this.state.lancamentos}
-                />
+                <View>
+                    <Text>Lançamentos:</Text>
+                    <FlatList
+                        horizontal
+                        ItemSeparatorComponent={() => <View style={{ width: 5 }} />}
+                        keyExtractor={item => item.idLancamento.toString()}
+                        renderItem={({ item }) => this._renderItem(item)}
+                        data={this.state.lancamentos}
+                    />
+                </View>
+                <View>
+                    <Text>Favoritos:</Text>
+                    <FlatList
+                        horizontal
+                        ItemSeparatorComponent={() => <View style={{ width: 5 }} />}
+                        keyExtractor={item => item.idLancamento.toString()}
+                        renderItem={({ item }) => this._renderItem(item)}
+                        data={this.state.favoritos}
+                    />
+
+                </View>
             </View>
-            <View>
-            <Text>Favoritos:</Text>
-            <FlatList
-                horizontal
-                ItemSeparatorComponent={() => <View style={{ width: 5 }} />}
-                keyExtractor={item => item.idLancamento.toString()}
-                renderItem={({ item }) => this._renderItem(item)}
-                data={this.state.favoritos}
-            />
-            <Text>{this.state.favoritos}</Text>
-        </View>
-        </View>
         )
     }
 }

@@ -13,13 +13,16 @@ import {
 } from 'react-native';
 import { createDrawerNavigator } from 'react-navigation-drawer'
 
-import { StackNavigator,
+import { createStackNavigator } from 'react-navigation-stack'
+
+import {
   TabNavigator, createAppContainer, SwitchNavigator, createSwitchNavigator } from 'react-navigation';
 
 
 import List from './components/List'
 import Signin from './components/Signin'
 import SideMenu from './components/SideMenu'
+import Detalhes from './components/Details'
 
 export class HeaderNavigationBar extends Component {
   render() {
@@ -112,6 +115,17 @@ const SignedOut = createDrawerNavigator(
       contentComponent: SideMenu,
       initialRouteName: 'Home',
     });
+
+    const AppStackNavigator = createStackNavigator({  
+      Details:{
+        screen:Detalhes
+      },
+
+    },{initialRouteName: 'Details',
+  },
+        navigationOptions={
+          headerMode:'none'
+    })
     
 
     export const RootNavigator = (signedIn = false) => {
@@ -123,7 +137,7 @@ const SignedOut = createDrawerNavigator(
           },
           Auth: {
             screen: SignedOut
-          }
+          },
         },
         {
           initialRouteName: signedIn ? "App" : "SignedOutLoading"
